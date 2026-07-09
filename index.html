@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RistoPrompt</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b0b0c">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+  :root{
+    --bg:#0b0b0c;
+    --panel:#141416;
+    --panel2:#1b1b1e;
+    --gold:#c9a35c;
+    --gold-light:#e8caa0;
+    --text:#f2f0ec;
+    --muted:#a9a7a3;
+    --border:#2b2a28;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:Arial, Helvetica, sans-serif;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .screen{display:none;min-height:100vh;padding:28px 20px 60px;}
+  .screen.active{display:block;}
+
+  /* HERO */
+  .eyebrow{text-align:center;letter-spacing:5px;color:var(--gold);font-size:11px;font-weight:700;margin-top:20px;}
+  h1.brand{
+    text-align:center;font-family:Georgia, serif;font-size:52px;margin:16px 0 0;font-weight:400;
+  }
+  h1.brand .ai{color:var(--gold);}
+  h1.brand .chef-r{position:relative;display:inline-block;}
+  .tagline{text-align:center;font-size:13px;letter-spacing:2px;color:var(--muted);margin-top:14px;}
+  .hero-icons{display:flex;justify-content:center;gap:26px;margin:36px 0;flex-wrap:wrap;}
+  .hero-icon{text-align:center;width:70px;}
+  .hero-icon .circle{
+    width:44px;height:44px;border:1px solid var(--gold);border-radius:50%;
+    display:flex;align-items:center;justify-content:center;margin:0 auto 8px;color:var(--gold);
+  }
+  .hero-icon .label{font-size:9.5px;color:var(--muted);line-height:1.3;}
+  .cta-primary{
+    display:block;width:100%;max-width:340px;margin:20px auto 0;
+    background:var(--gold);color:#1a1200;text-align:center;padding:16px;
+    border-radius:8px;font-weight:700;font-size:15px;border:none;
+  }
+
+  /* PACKAGES */
+  .section-title{font-size:18px;color:var(--gold-light);margin:0 0 4px;font-family:Georgia, serif;}
+  .section-sub{font-size:12.5px;color:var(--muted);margin-bottom:20px;}
+  .package-card{
+    background:var(--panel);border:1px solid var(--border);border-radius:12px;
+    padding:20px;margin-bottom:16px;
+  }
+  .package-card.unlocked{border-color:var(--gold);}
+  .package-header{display:flex;justify-content:space-between;align-items:flex-start;}
+  .package-name{font-size:16px;color:var(--text);font-weight:700;margin-bottom:6px;}
+  .package-desc{font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:14px;}
+  .package-price{font-size:15px;color:var(--gold);font-weight:700;}
+  .badge-unlocked{
+    background:var(--gold);color:#1a1200;font-size:10px;font-weight:700;
+    padding:4px 10px;border-radius:12px;
+  }
+  .btn-row{display:flex;gap:10px;margin-top:12px;}
+  .btn{
+    flex:1;text-align:center;padding:11px;border-radius:8px;font-size:12.5px;font-weight:700;
+    border:1px solid var(--border);color:var(--text);background:transparent;cursor:pointer;
+  }
+  .btn.gold{background:var(--gold);color:#1a1200;border:none;}
+
+  /* LICENSE MODAL */
+  .modal-overlay{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);
+    align-items:center;justify-content:center;padding:20px;z-index:50;
+  }
+  .modal-overlay.active{display:flex;}
+  .modal{
+    background:var(--panel);border:1px solid var(--gold);border-radius:12px;
+    padding:26px;width:100%;max-width:360px;
+  }
+  .modal h3{margin:0 0 6px;color:var(--gold-light);font-family:Georgia, serif;font-weight:400;font-size:20px;}
+  .modal p{font-size:12.5px;color:var(--muted);margin:0 0 16px;line-height:1.5;}
+  .modal input{
+    width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:8px;
+    padding:12px;color:var(--text);font-size:14px;margin-bottom:12px;
+  }
+  .modal-error{color:#e0674d;font-size:12px;margin-bottom:10px;display:none;}
+  .modal-actions{display:flex;gap:10px;}
+
+  /* LIBRARY */
+  .top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+  .back-btn{color:var(--gold);font-size:13px;background:none;border:none;padding:0;}
+  .prompt-card{
+    background:var(--panel2);border:1px solid var(--border);border-radius:10px;
+    padding:16px;margin-bottom:12px;
+  }
+  .prompt-text{font-size:13.5px;line-height:1.6;color:var(--text);margin-bottom:10px;}
+  .copy-btn{
+    background:none;border:1px solid var(--gold);color:var(--gold);
+    padding:8px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;
+  }
+  .copy-btn.copied{background:var(--gold);color:#1a1200;}
+
+  .bottom-nav{
+    position:fixed;bottom:0;left:0;right:0;background:var(--panel);
+    border-top:1px solid var(--border);display:flex;padding:8px 0;
+  }
+  .nav-item{flex:1;text-align:center;font-size:10.5px;color:var(--muted);padding:6px 0;}
+  .nav-item.active{color:var(--gold);}
+</style>
+</head>
+<body>
+
+<!-- SCHERMATA 1: HERO / MARKETING -->
+<div class="screen active" id="screen-hero">
+  <div class="eyebrow">PER RISTORANTI E ATTIVITÀ DEL SETTORE FOOD</div>
+  <h1 class="brand"><span class="chef-r">R</span>isto<span class="ai">Prompt</span></h1>
+  <div class="tagline">PROMPT PRONTI CHE FANNO CRESCERE<br>IL TUO RISTORANTE PIÙ VELOCEMENTE</div>
+
+  <div class="hero-icons">
+    <div class="hero-icon"><div class="circle">⚡</div><div class="label">Risparmia tempo</div></div>
+    <div class="hero-icon"><div class="circle">🧠</div><div class="label">Pronti all'uso</div></div>
+    <div class="hero-icon"><div class="circle">📈</div><div class="label">Più vendite</div></div>
+    <div class="hero-icon"><div class="circle">✔</div><div class="label">Sempre con te</div></div>
+  </div>
+
+  <button class="cta-primary" onclick="showScreen('screen-packages')">Scopri i pacchetti</button>
+</div>
+
+<!-- SCHERMATA 2: PACCHETTI -->
+<div class="screen" id="screen-packages">
+  <div class="top-bar">
+    <button class="back-btn" onclick="showScreen('screen-hero')">← Indietro</button>
+  </div>
+  <div class="section-title">I tuoi pacchetti</div>
+  <div class="section-sub">Sblocca solo quello che ti serve</div>
+  <div id="packages-container"></div>
+</div>
+
+<!-- SCHERMATA 3: LIBRERIA PROMPT -->
+<div class="screen" id="screen-library">
+  <div class="top-bar">
+    <button class="back-btn" onclick="showScreen('screen-packages')">← Pacchetti</button>
+  </div>
+  <div class="section-title" id="library-title">—</div>
+  <div class="section-sub" id="library-sub">—</div>
+  <div id="library-container"></div>
+</div>
+
+<!-- MODAL LICENZA -->
+<div class="modal-overlay" id="license-modal">
+  <div class="modal">
+    <h3 id="modal-package-name">Sblocca pacchetto</h3>
+    <p>Inserisci il codice licenza ricevuto via email dopo l'acquisto.</p>
+    <input type="text" id="license-input" placeholder="XXXX-XXXX-XXXX-XXXX" autocapitalize="characters">
+    <div class="modal-error" id="modal-error">Codice non valido. Controlla e riprova.</div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Annulla</button>
+      <button class="btn gold" id="verify-btn" onclick="verifyLicense()">Verifica</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   CONFIGURAZIONE PACCHETTI
+   Sostituisci checkoutUrl e productId con i tuoi valori reali
+   di Lemon Squeezy (dashboard > prodotti > license keys attivo)
+   ========================================================= */
+const PACKAGES = [
+  {
+    id: 'recensioni',
+    name: 'Pacchetto Recensioni',
+    desc: 'Rispondi a recensioni negative e positive, richiedi nuove recensioni ai clienti soddisfatti.',
+    price: '9€',
+    productId: 'SOSTITUISCI_PRODUCT_ID_RECENSIONI',
+    checkoutUrl: 'https://tuonegozio.lemonsqueezy.com/checkout/buy/SOSTITUISCI',
+    prompts: [
+      "Scrivi una risposta professionale ed empatica a questa recensione negativa, riconoscendo il problema e offrendo una soluzione concreta, senza scuse eccessive: [incolla qui la recensione]",
+      "Scrivi una risposta breve e calorosa a una recensione a 5 stelle che menziona il nostro servizio cordiale.",
+      "Crea un messaggio da inviare a un cliente abituale chiedendogli gentilmente di lasciare una recensione su Google, senza risultare invadente.",
+      "Scrivi una risposta a una recensione che lamenta tempi di attesa lunghi, spiegando le migliorie in corso senza fare promesse eccessive.",
+      "Trasforma questa recensione negativa in 3 punti d'azione concreti per il mio staff: [incolla qui la recensione]",
+      "Scrivi una risposta a una recensione mista (2 punti positivi, 1 negativo), dando peso equilibrato a entrambi.",
+      "Crea un cartello da mettere in sala che inviti i clienti a lasciare una recensione, con tono simpatico e non invadente.",
+      "Scrivi una risposta a una recensione che accusa ingiustamente il locale di scarsa igiene, mantenendo un tono fermo ma professionale."
+    ]
+  },
+  {
+    id: 'menu',
+    name: 'Pacchetto Menù',
+    desc: 'Descrizioni piatti, menu stagionali, piatto del giorno, abbinamenti.',
+    price: '9€',
+    productId: 'SOSTITUISCI_PRODUCT_ID_MENU',
+    checkoutUrl: 'https://tuonegozio.lemonsqueezy.com/checkout/buy/SOSTITUISCI',
+    prompts: [
+      "Scrivi una descrizione accattivante ma non eccessiva per questo piatto, indicando ingredienti principali e tecnica di cottura: [nome piatto e ingredienti]",
+      "Suggerisci un piatto del giorno usando questi ingredienti di stagione avanzati in cucina: [elenco ingredienti]",
+      "Crea 3 varianti di descrizione per lo stesso piatto: una breve per il menu cartaceo, una più lunga per i social, una per un cliente con intolleranze da segnalare.",
+      "Proponi un abbinamento vino-piatto per questo primo: [nome piatto], spiegando brevemente il perché.",
+      "Scrivi il testo per un menu degustazione di 4 portate a tema [stagione/ricorrenza], con un filo conduttore narrativo.",
+      "Suggerisci come rinominare questo piatto per renderlo più invitante senza cambiarne la sostanza: [nome piatto attuale]",
+      "Crea una breve scheda ingredienti/allergeni in linguaggio semplice per questo piatto: [nome piatto]"
+    ]
+  },
+  {
+    id: 'social',
+    name: 'Pacchetto Social & Marketing',
+    desc: 'Caption, post promozionali, contenuti per Instagram e Facebook.',
+    price: '9€',
+    productId: 'SOSTITUISCI_PRODUCT_ID_SOCIAL',
+    checkoutUrl: 'https://tuonegozio.lemonsqueezy.com/checkout/buy/SOSTITUISCI',
+    prompts: [
+      "Scrivi una caption Instagram per una foto di questo piatto, tono caldo e informale, con 3 hashtag pertinenti: [nome piatto]",
+      "Crea un post per annunciare una promozione speciale del weekend: [dettagli promozione]",
+      "Scrivi un testo breve per una storia Instagram che mostra il dietro le quinte della cucina.",
+      "Crea un post per invitare i clienti a prenotare per una serata a tema: [tema/evento]",
+      "Scrivi 3 varianti di caption per lo stesso post, una simpatica, una elegante, una diretta con call-to-action.",
+      "Crea un testo per promuovere il servizio di asporto/consegna, evidenziando un vantaggio concreto."
+    ]
+  },
+  {
+    id: 'business',
+    name: 'Pacchetto Business',
+    desc: 'Analisi costi, pricing, gestione operativa quotidiana.',
+    price: '9€',
+    productId: 'SOSTITUISCI_PRODUCT_ID_BUSINESS',
+    checkoutUrl: 'https://tuonegozio.lemonsqueezy.com/checkout/buy/SOSTITUISCI',
+    prompts: [
+      "Analizza questi costi e ricavi di un piatto e suggerisci se il prezzo attuale è sostenibile: [costi ingredienti, prezzo di vendita]",
+      "Suggerisci 3 modi per ridurre lo spreco alimentare in cucina in base a questo elenco di rimanenze frequenti: [elenco]",
+      "Crea una checklist di apertura giornaliera per il mio locale, in ordine di priorità.",
+      "Aiutami a impostare un prezzo di vendita per questo nuovo piatto dato il costo ingredienti e un food cost target del 30%: [dati]",
+      "Scrivi un breve script per formare un nuovo cameriere su come presentare il menu ai clienti."
+    ]
+  }
+];
+
+/* =========================================================
+   NAVIGAZIONE SCHERMATE
+   ========================================================= */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+/* =========================================================
+   STATO LICENZE (salvato localmente sul dispositivo)
+   ========================================================= */
+function getUnlocked(){
+  try{
+    return JSON.parse(localStorage.getItem('ristoprompt_unlocked') || '{}');
+  }catch(e){ return {}; }
+}
+function setUnlocked(pkgId){
+  const unlocked = getUnlocked();
+  unlocked[pkgId] = true;
+  localStorage.setItem('ristoprompt_unlocked', JSON.stringify(unlocked));
+}
+
+/* =========================================================
+   RENDER PACCHETTI
+   ========================================================= */
+function renderPackages(){
+  const unlocked = getUnlocked();
+  const container = document.getElementById('packages-container');
+  container.innerHTML = '';
+  PACKAGES.forEach(pkg => {
+    const isUnlocked = !!unlocked[pkg.id];
+    const card = document.createElement('div');
+    card.className = 'package-card' + (isUnlocked ? ' unlocked' : '');
+    card.innerHTML = `
+      <div class="package-header">
+        <div>
+          <div class="package-name">${pkg.name}</div>
+        </div>
+        ${isUnlocked ? '<span class="badge-unlocked">SBLOCCATO</span>' : ''}
+      </div>
+      <div class="package-desc">${pkg.desc}</div>
+      <div class="package-price">${pkg.price} — acquisto singolo</div>
+      <div class="btn-row">
+        ${isUnlocked
+          ? `<button class="btn gold" onclick="openLibrary('${pkg.id}')">Apri prompt</button>`
+          : `<a class="btn" href="${pkg.checkoutUrl}" target="_blank" style="text-decoration:none;display:flex;align-items:center;justify-content:center;">Acquista</a>
+             <button class="btn gold" onclick="openModal('${pkg.id}')">Ho già il codice</button>`
+        }
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+/* =========================================================
+   MODAL LICENZA
+   ========================================================= */
+let currentPackageId = null;
+
+function openModal(pkgId){
+  currentPackageId = pkgId;
+  const pkg = PACKAGES.find(p => p.id === pkgId);
+  document.getElementById('modal-package-name').textContent = 'Sblocca ' + pkg.name;
+  document.getElementById('license-input').value = '';
+  document.getElementById('modal-error').style.display = 'none';
+  document.getElementById('license-modal').classList.add('active');
+}
+function closeModal(){
+  document.getElementById('license-modal').classList.remove('active');
+}
+
+async function verifyLicense(){
+  const key = document.getElementById('license-input').value.trim();
+  const errorEl = document.getElementById('modal-error');
+  const btn = document.getElementById('verify-btn');
+  errorEl.style.display = 'none';
+
+  if(!key){
+    errorEl.textContent = 'Inserisci un codice.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  btn.textContent = 'Verifica...';
+  btn.disabled = true;
+
+  try{
+    /* NOTA TECNICA: questa chiamata va verso l'API pubblica di Lemon Squeezy.
+       Se il browser blocca la richiesta per CORS, questa parte
+       va spostata dietro una piccola funzione serverless (proxy).
+       Non è stato testato in produzione: verificalo prima del lancio. */
+    const res = await fetch('https://api.lemonsqueezy.com/v1/licenses/validate', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: 'license_key=' + encodeURIComponent(key)
+    });
+    const data = await res.json();
+
+    const pkg = PACKAGES.find(p => p.id === currentPackageId);
+    const valid = data.valid === true &&
+                  String(data.meta && data.meta.product_id) === String(pkg.productId);
+
+    if(valid){
+      setUnlocked(currentPackageId);
+      closeModal();
+      renderPackages();
+    } else {
+      errorEl.textContent = 'Codice non valido per questo pacchetto.';
+      errorEl.style.display = 'block';
+    }
+  }catch(e){
+    errorEl.textContent = 'Impossibile verificare ora. Controlla la connessione o riprova più tardi.';
+    errorEl.style.display = 'block';
+  }
+
+  btn.textContent = 'Verifica';
+  btn.disabled = false;
+}
+
+/* =========================================================
+   LIBRERIA PROMPT
+   ========================================================= */
+function openLibrary(pkgId){
+  const pkg = PACKAGES.find(p => p.id === pkgId);
+  document.getElementById('library-title').textContent = pkg.name;
+  document.getElementById('library-sub').textContent = 'Tocca "Copia" e incolla il prompt nella tua AI preferita.';
+  const container = document.getElementById('library-container');
+  container.innerHTML = '';
+  pkg.prompts.forEach((text, i) => {
+    const card = document.createElement('div');
+    card.className = 'prompt-card';
+    card.innerHTML = `
+      <div class="prompt-text">${text}</div>
+      <button class="copy-btn" onclick="copyPrompt(this, ${i})">Copia</button>
+    `;
+    card.dataset.text = text;
+    container.appendChild(card);
+  });
+  showScreen('screen-library');
+}
+
+function copyPrompt(btn, i){
+  const text = btn.closest('.prompt-card').dataset.text;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copiato ✓';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copia';
+      btn.classList.remove('copied');
+    }, 1800);
+  });
+}
+
+/* =========================================================
+   AVVIO
+   ========================================================= */
+renderPackages();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
